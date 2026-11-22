@@ -1,0 +1,43 @@
+name: Windows build
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install packager
+        run: python -m pip install --upgrade pyinstaller
+
+      - name: Build portable app folder
+        shell: pwsh
+        run: |
+          python -m PyInstaller --noconfirm --clean --windowed --onedir --name MiniVoice --paths src src/app.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Copy-Item config dist/MiniVoice/config -Recurse -Force
+          Copy-Item scripts dist/MiniVoice/scripts -Recurse -Force
+          Copy-Item README.md dist/MiniVoice/README.md -Force
+          Compress-Archive -Path dist/MiniVoice/* -DestinationPath dist/MiniVoice-windows-x64.zip -Force
+
+      - name: Upload Windows test package
+        uses: actions/upload-artifact@v4
+        with:
+          name: MiniVoice-windows-x64
+          path: dist/MiniVoice-windows-x64.zip
+          if-no-files-found: error
+          retention-days: 14
