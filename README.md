@@ -40,9 +40,11 @@ MiniVoice/
 
 推送到 `main`/`master`、创建 Pull Request，或在 GitHub 的 **Actions → Windows build → Run workflow** 手动触发构建后，可从对应运行记录的 **Artifacts** 下载 `MiniVoice-windows-x64`。解压后运行 `MiniVoice.exe`。该包是可移植目录包，请保留整个目录，不要只复制 EXE。包内附 Equalizer APO 1.4.2 安装程序及其对应 GPL 源码压缩包；安装驱动仍需管理员确认并重启 Windows。
 
-运行 MiniVoice 本体不需要 Python、模型或联网；不过实时变声目前由 **Equalizer APO + 用户自行提供的 64 位 VST2 插件**完成，语音应用应选择相应的处理后麦克风设备。SteelSeries Sonar 是可选的 AI 降噪环节，不是变声必需项。系统音频驱动/软件需要预先安装和配置，首次安装依赖时可能需要联网；安装完成后，MiniVoice 的变声配置和实时音频处理在本机完成。
+运行 MiniVoice 本体不需要 Python、模型或联网；不过目前 Windows 包**没有内置 VST2 变声插件**，需要用户先从插件作者处获取 64 位 DLL 并放入 `vst_plugins/`。Equalizer APO 和已安装的插件处理音频时无需模型或网络。SteelSeries Sonar 是可选的 AI 降噪环节，不是变声必需项。系统音频驱动/软件需要预先安装和配置，首次安装依赖时可能需要联网；安装完成后，MiniVoice 的变声配置和实时音频处理在本机完成。
 
-GitHub 构建会附带 Equalizer APO 安装程序，但**当前仍没有随包分发 VST2 变声 DLL**。很多免费 VST 只允许用户自行下载，不允许第三方重新打包；而该程序只有加载兼容插件后才能执行音高/共振峰变声。不要把普通 VST3 文件放进来，Equalizer APO 标准版的配置加载使用的是 VST2 DLL。
+GitHub 构建会附带 Equalizer APO 安装程序，但**当前没有随包分发 VST2 变声 DLL**。例如 GVST GForm 支持音高/共振峰处理，但其作者规定插件只能由官网或获授权方分发，故本项目不能把它复制进构建包。可从 [GVST 官方下载页](https://gvst.uk/Downloads)获取官方压缩包，按其许可自行安装/复制 64 位 `GForm.dll` 到 `vst_plugins/`；程序会自动发现该目录中的 DLL，也可以使用“选择 DLL...”浏览。不要把普通 VST3 文件放进来，Equalizer APO 标准版的配置加载使用的是 VST2 DLL。
+
+本项目构建目标是 x64。32 位 Windows VST2 DLL 无法由此包内的 64 位 Equalizer APO 直接加载；因此不会为了“同时提供 32/64 位”而把不可用的 32 位插件放进目录。
 
 ## 快速部署步骤（约 5 分钟）
 
@@ -61,8 +63,8 @@ GitHub 构建会附带 Equalizer APO 安装程序，但**当前仍没有随包�
 3. 使用 Sonar 时勾选 **`SteelSeries Sonar - Microphone`**；不使用 Sonar 时勾选你的物理麦克风。点击确定并按提示**重启电脑**。
 
 ### 第 4 步：放入变声 VST 插件
-1. 将你单独获取的 64 位 VST2 变声插件（`.dll`）复制到 `vst_plugins/` 目录中。
-   - **重要提示**：原版 `RoVee.dll` (v1.21) 为 32 位插件，64 位 Equalizer APO 不能直接加载 32 位 DLL。如需使用 RoVee 请通过 jBridge 桥接为 64 位；或者直接选用原生 64 位免费插件 **GVST GForm (64-bit)** 或 **Graillon Free (64-bit)**（效果同样自然，且原生兼容）。
+1. 从插件作者处获取并按其许可安装/复制 64 位 VST2 变声插件（`.dll`）到 `vst_plugins/` 目录中。
+   - **重要提示**：原版 `RoVee.dll` (v1.21) 为 32 位插件，64 位 Equalizer APO 不能直接加载 32 位 DLL。可考虑原生 64 位插件，例如 **GVST GForm**；请遵循插件作者的分发和安装许可。
 2. 右键以管理员身份运行一次 `scripts/setup_apo_hook.ps1`，完成配置文件挂载。
 
 ### 第 5 步：启动极简变声并微调音色
