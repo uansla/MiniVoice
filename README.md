@@ -22,7 +22,7 @@ Equalizer APO + 变声 VST 插件          ──► 系统级静默变声 + 轻
 ```text
 MiniVoice/
 ├── run.bat                       # 双击启动极简变声（纯 Python 标准库，免 pip 装包）
-├── build_exe.bat                 # 可选：一键打包成独立 MiniVoice.exe
+├── build_exe.bat                 # 本地构建 Windows 可移植测试包
 ├── scripts/
 │   ├── install_tools.ps1         # 通过 winget 一键安装 SteelSeries GG 与 Equalizer APO
 │   └── setup_apo_hook.ps1        # 自动授权并挂载 Equalizer APO 路由文件（运行一次即可）
@@ -35,6 +35,14 @@ MiniVoice/
 │   └── presets/                  # 预设模板（原声直通 / 男变女 / 女变男）
 └── vst_plugins/                  # 放置变声 VST2 插件 (.dll)
 ```
+
+## GitHub Actions Windows 测试包
+
+推送到 `main`/`master`、创建 Pull Request，或在 GitHub 的 **Actions → Windows build → Run workflow** 手动触发构建后，可从对应运行记录的 **Artifacts** 下载 `MiniVoice-windows-x64`。解压后运行 `MiniVoice.exe`。该包是可移植目录包，请保留整个目录，不要只复制 EXE。
+
+运行 MiniVoice 本体不需要 Python、模型或联网；不过实时变声目前由 **Equalizer APO + 用户自行提供的 64 位 VST2 插件**完成，语音应用应选择相应的处理后麦克风设备。SteelSeries Sonar 是可选的 AI 降噪环节，不是变声必需项。系统音频驱动/软件需要预先安装和配置，首次安装依赖时可能需要联网；安装完成后，MiniVoice 的变声配置和实时音频处理在本机完成。
+
+GitHub 构建仅生成 MiniVoice 桌面程序，不会打包 Equalizer APO、Sonar 或第三方 VST 插件。VST 插件需单独获取，并确认其来源与许可证。
 
 ## 快速部署步骤（约 5 分钟）
 
