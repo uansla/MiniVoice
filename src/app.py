@@ -264,8 +264,12 @@ class MiniVoiceApp(tk.Tk):
     def _refresh_status(self, extra_message: str = ""):
         env = self.manager.check_environment()
         apo_state = "normal" if env["apo_installed"] else "disabled"
-        for widget in (self.toggle_btn, self.preset_combo, self.apply_button, self.editor_button, self.selector_button):
+        for widget in (self.toggle_btn, self.preset_combo, self.apply_button):
             widget.configure(state=apo_state)
+        # Utility launch buttons should remain usable when the APO config path
+        # is missing or misdetected; launching them helps repair that state.
+        self.editor_button.configure(state="normal")
+        self.selector_button.configure(state="normal")
         self._inspect_vst_and_display(self.vst_var.get().strip())
 
         lines = []
