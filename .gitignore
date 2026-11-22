@@ -1,0 +1,5 @@
+dependencies/
+dist/
+build/
+__pycache__/
+*.py[cod]

@@ -38,17 +38,17 @@ MiniVoice/
 
 ## GitHub Actions Windows 测试包
 
-推送到 `main`/`master`、创建 Pull Request，或在 GitHub 的 **Actions → Windows build → Run workflow** 手动触发构建后，可从对应运行记录的 **Artifacts** 下载 `MiniVoice-windows-x64`。解压后运行 `MiniVoice.exe`。该包是可移植目录包，请保留整个目录，不要只复制 EXE。
+推送到 `main`/`master`、创建 Pull Request，或在 GitHub 的 **Actions → Windows build → Run workflow** 手动触发构建后，可从对应运行记录的 **Artifacts** 下载 `MiniVoice-windows-x64`。解压后运行 `MiniVoice.exe`。该包是可移植目录包，请保留整个目录，不要只复制 EXE。包内附 Equalizer APO 1.4.2 安装程序及其对应 GPL 源码压缩包；安装驱动仍需管理员确认并重启 Windows。
 
 运行 MiniVoice 本体不需要 Python、模型或联网；不过实时变声目前由 **Equalizer APO + 用户自行提供的 64 位 VST2 插件**完成，语音应用应选择相应的处理后麦克风设备。SteelSeries Sonar 是可选的 AI 降噪环节，不是变声必需项。系统音频驱动/软件需要预先安装和配置，首次安装依赖时可能需要联网；安装完成后，MiniVoice 的变声配置和实时音频处理在本机完成。
 
-GitHub 构建仅生成 MiniVoice 桌面程序，不会打包 Equalizer APO、Sonar 或第三方 VST 插件。VST 插件需单独获取，并确认其来源与许可证。
+GitHub 构建会附带 Equalizer APO 安装程序，但**当前仍没有随包分发 VST2 变声 DLL**。很多免费 VST 只允许用户自行下载，不允许第三方重新打包；而该程序只有加载兼容插件后才能执行音高/共振峰变声。不要把普通 VST3 文件放进来，Equalizer APO 标准版的配置加载使用的是 VST2 DLL。
 
 ## 快速部署步骤（约 5 分钟）
 
 ### 第 1 步：一键安装基础软件
-1. 右键点击 `scripts/install_tools.ps1`，选择 **“使用 PowerShell 运行”**（需要管理员权限）。
-2. 脚本会自动通过 `winget` 安装 **SteelSeries GG** 和 **Equalizer APO**。
+1. 点击界面里的 **“安装/修复音频引擎”**，或右键 `scripts/install_tools.ps1` 以管理员身份运行。完整测试包可离线启动随包提供的 Equalizer APO 安装程序；Sonar 可选安装。
+2. 在 Equalizer APO 安装器/Device Selector 中选择实际麦克风设备，完成后按提示重启 Windows。仅以管理员身份运行 MiniVoice 不会替代这一步，也不会自动创建 Equalizer APO 配置目录。
 
 ### 第 2 步（可选）：配置 AI 降噪
 1. 打开 **SteelSeries GG**，进入左侧 **Sonar** 模块（完全免费，无需赛睿硬件）。

@@ -2,8 +2,8 @@
 <#
 .SYNOPSIS
     极简变声 (MiniVoice) 依赖组件一键安装脚本：
-    1. SteelSeries GG (内置免费的 Sonar AI 降噪，屏蔽狗叫/猫叫/键盘声)
-    2. Equalizer APO (开源免费的系统级音频处理引擎)
+    1. Equalizer APO (required system audio processing engine)
+    2. SteelSeries GG/Sonar (optional noise reduction)
 #>
 
 $ErrorActionPreference = "Stop"
@@ -13,29 +13,39 @@ Write-Host "  极简变声 (MiniVoice) - 依赖组件一键安装脚本" -Foregr
 Write-Host "==================================================" -ForegroundColor Cyan
 Write-Host ""
 
-if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-    Write-Host "[错误] 未检测到 winget（Windows 应用安装程序）。" -ForegroundColor Red
-    Write-Host "请手动从以下官方地址下载安装：" -ForegroundColor Yellow
-    Write-Host "  1. SteelSeries GG: https://steelseries.com/gg"
-    Write-Host "  2. Equalizer APO:  https://sourceforge.net/projects/equalizerapo/"
-    Pause
-    exit 1
+$OfflineInstaller = Join-Path $PSScriptRoot "..\dependencies\EqualizerAPO-x64-1.4.2.exe"
+if (Test-Path $OfflineInstaller) {
+    Write-Host "正在启动随测试包提供的 Equalizer APO 1.4.2 安装程序..." -ForegroundColor Green
+    $process = Start-Process -FilePath $OfflineInstaller -Wait -PassThru
+    if ($process.ExitCode -ne 0) {
+        throw "Equalizer APO 安装程序退出代码：$($process.ExitCode)"
+    }
+} else {
+    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+        throw "未找到随包安装程序，也未检测到 winget。请下载完整 GitHub Windows 测试包，或先安装 winget。"
+    }
+    Write-Host "正在通过 winget 安装 Equalizer APO..." -ForegroundColor Green
+    winget install --id JonasThedering.EqualizerAPO -e --accept-package-agreements --accept-source-agreements
+    if ($LASTEXITCODE -ne 0) { throw "winget 安装 Equalizer APO 失败，退出代码：$LASTEXITCODE" }
 }
 
-Write-Host "[1/2] 正在安装 SteelSeries GG (含 Sonar AI 降噪)..." -ForegroundColor Green
-winget install --id SteelSeries.GG -e --accept-package-agreements --accept-source-agreements
-
-Write-Host ""
-Write-Host "[2/2] 正在安装 Equalizer APO..." -ForegroundColor Green
-winget install --id JonasThedering.EqualizerAPO -e --accept-package-agreements --accept-source-agreements
+$installSonar = Read-Host "是否同时安装可选的 SteelSeries GG/Sonar 降噪功能？(y/N)"
+if ($installSonar -match '^(y|yes)$') {
+    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+        Write-Host "未找到 winget；可稍后从 https://steelseries.com/gg 手动安装 Sonar。" -ForegroundColor Yellow
+    } else {
+        winget install --id SteelSeries.GG -e --accept-package-agreements --accept-source-agreements
+        if ($LASTEXITCODE -ne 0) { throw "SteelSeries GG 安装失败，退出代码：$LASTEXITCODE" }
+    }
+}
 
 Write-Host ""
 Write-Host "==================================================" -ForegroundColor Cyan
-Write-Host "  基础软件安装完成！接下来的 4 步关键配置：" -ForegroundColor Cyan
+Write-Host "  安装程序已结束。请完成以下设备配置：" -ForegroundColor Cyan
 Write-Host "==================================================" -ForegroundColor Cyan
-Write-Host "1. 打开 SteelSeries GG -> 启用 Sonar -> Mic 页面选择你的真实麦克风 -> 开启 ClearCast AI Noise Cancellation。"
-Write-Host "2. 打开 Equalizer APO 的 Device Selector（设备选择器）-> 切换到 Capture devices（录音设备）-> 勾选 SteelSeries Sonar - Microphone -> 重启电脑。"
-Write-Host "3. 将 64 位变声 VST 插件（如 GVST GForm x64 / Graillon Free x64，或经 jBridge 桥接的 RoVee）放入本项目的 vst_plugins 文件夹。"
-Write-Host "4. 右键运行 scripts\setup_apo_hook.ps1，随后双击 run.bat 即可启动极简变声！"
+Write-Host "1. 在 Equalizer APO Device Selector -> Capture devices 中勾选要处理的麦克风（若使用 Sonar，选 Sonar - Microphone）。"
+Write-Host "2. 应用更改并按提示重启 Windows；APO 配置目录只会在安装后创建。"
+Write-Host "3. MiniVoice 还需要兼容的 64 位 VST2 变声插件 DLL；本包目前不含该 DLL。"
+Write-Host "4. 安装完成并重启后，再启动 MiniVoice 并配置 VST 插件。"
 Write-Host ""
 Pause

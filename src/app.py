@@ -7,6 +7,7 @@ app.py
 import os
 import subprocess
 import sys
+import ctypes
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
@@ -54,7 +55,8 @@ class MiniVoiceApp(tk.Tk):
         style.configure("Card.TLabel", background="#282A32", foreground="#E6E8EE", font=("Microsoft YaHei UI", 10))
         style.configure("Title.TLabel", background="#1E1F24", foreground="#FFFFFF", font=("Microsoft YaHei UI", 14, "bold"))
         style.configure("Sub.TLabel", background="#282A32", foreground="#9AA0AE", font=("Microsoft YaHei UI", 9))
-        style.configure("TButton", font=("Microsoft YaHei UI", 9), padding=(10, 6))
+        style.configure("TButton", font=("Microsoft YaHei UI", 9), padding=(10, 6), background="#3B82F6", foreground="#FFFFFF")
+        style.map("TButton", background=[("disabled", "#454852"), ("active", "#2563EB")], foreground=[("disabled", "#9AA0AE")])
         style.configure("Accent.TButton", background="#3B82F6", foreground="#FFFFFF", font=("Microsoft YaHei UI", 10, "bold"))
         style.map("Accent.TButton", background=[("active", "#2563EB")])
 
@@ -127,7 +129,8 @@ class MiniVoiceApp(tk.Tk):
             value=self.manager.settings.get("target_device", "SteelSeries Sonar - Microphone")
         )
         ttk.Entry(dev_row, textvariable=self.device_var).pack(side="left", fill="x", expand=True, padx=(0, 8))
-        ttk.Button(dev_row, text="保存并应用", command=self._apply_current).pack(side="right")
+        self.apply_button = ttk.Button(dev_row, text="保存并应用", command=self._apply_current)
+        self.apply_button.pack(side="right")
 
         # VST 插件路径
         vst_row = ttk.Frame(cfg_card, style="Card.TFrame")
@@ -149,9 +152,14 @@ class MiniVoiceApp(tk.Tk):
         btn_row = ttk.Frame(tools_card, style="Card.TFrame")
         btn_row.pack(fill="x")
 
-        ttk.Button(btn_row, text="打开 SteelSeries GG", command=self._open_sonar).pack(side="left", padx=(0, 8))
-        ttk.Button(btn_row, text="打开 APO 配置编辑器（调 VST 参数）", command=self._open_apo_editor).pack(side="left", padx=(0, 8))
-        ttk.Button(btn_row, text="APO 设备选择器", command=self._open_device_selector).pack(side="left", padx=(0, 8))
+        self.sonar_button = ttk.Button(btn_row, text="打开 SteelSeries GG", command=self._open_sonar)
+        self.sonar_button.pack(side="left", padx=(0, 8))
+        self.editor_button = ttk.Button(btn_row, text="打开 APO 配置编辑器", command=self._open_apo_editor)
+        self.editor_button.pack(side="left", padx=(0, 8))
+        self.selector_button = ttk.Button(btn_row, text="APO 设备选择器", command=self._open_device_selector)
+        self.selector_button.pack(side="left", padx=(0, 8))
+        self.install_button = ttk.Button(btn_row, text="安装/修复音频引擎", command=self._install_audio_engine)
+        self.install_button.pack(side="left", padx=(0, 8))
         ttk.Button(btn_row, text="检测环境", command=self._refresh_status).pack(side="right")
 
         # 4. 实时配置预览与状态日志
@@ -230,6 +238,9 @@ class MiniVoiceApp(tk.Tk):
 
     def _refresh_status(self, extra_message: str = ""):
         env = self.manager.check_environment()
+        apo_state = "normal" if env["apo_installed"] else "disabled"
+        for widget in (self.toggle_btn, self.preset_combo, self.apply_button, self.editor_button, self.selector_button):
+            widget.configure(state=apo_state)
         self._inspect_vst_and_display(self.vst_var.get().strip())
 
         lines = []
@@ -238,7 +249,7 @@ class MiniVoiceApp(tk.Tk):
             lines.append("-" * 60)
 
         lines.append(f"1. SteelSeries GG (Sonar): {'[已安装]' if env['sonar_installed'] else '[未检测到，请运行 scripts/install_tools.ps1]'}")
-        lines.append(f"2. Equalizer APO 目录:     {'[已安装]' if env['apo_installed'] else '[未检测到，请运行 scripts/install_tools.ps1]'}")
+        lines.append(f"2. Equalizer APO 目录:     {'[已安装]' if env['apo_installed'] else '[未安装；管理员权限不会自动安装，请点击“安装/修复音频引擎”]'}")
         lines.append(f"3. APO 配置写入权限:       {'[正常]' if env['apo_config_writable'] else '[无权限，请以管理员身份运行或执行 setup_apo_hook.ps1]'}")
         lines.append(f"4. VST 变声插件文件:       {'[已就绪]' if env['vst_configured'] else '[未选择 DLL]'}")
         lines.append("")
@@ -249,6 +260,20 @@ class MiniVoiceApp(tk.Tk):
         self.log_text.delete("1.0", "end")
         self.log_text.insert("1.0", "\n".join(lines))
         self.log_text.configure(state="disabled")
+
+    def _install_audio_engine(self):
+        script = self.project_root / "scripts" / "install_tools.ps1"
+        if not script.is_file():
+            messagebox.showerror("缺少安装文件", f"没有找到安装脚本：\n{script}")
+            return
+        messagebox.showinfo(
+            "安装音频引擎",
+            "将以管理员权限启动安装脚本。安装 Equalizer APO 后，请在设备选择器中勾选正在使用的麦克风，并按安装程序提示重启电脑。安装需要联网。",
+        )
+        args = f'-NoProfile -ExecutionPolicy Bypass -File "{script}"'
+        result = ctypes.windll.shell32.ShellExecuteW(None, "runas", "powershell.exe", args, str(script.parent), 1)
+        if result <= 32:
+            messagebox.showerror("无法启动安装程序", f"Windows ShellExecute 错误码：{result}")
 
     def _launch_exe(self, exe_path: str, name: str):
         if os.path.exists(exe_path):

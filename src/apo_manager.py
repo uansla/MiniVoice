@@ -8,6 +8,7 @@ apo_manager.py
 
 import json
 import shutil
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -34,6 +35,25 @@ class APOManager:
         self.presets_dir = self.config_dir / "presets"
         self.settings_path = self.config_dir / "settings.json"
         self.settings = self._load_settings()
+
+    def _effective_apo_config_dir(self) -> Path:
+        """Use the configured path, or the install path recorded by Equalizer APO."""
+        configured = Path(self.settings.get("apo_config_dir", DEFAULT_SETTINGS["apo_config_dir"]))
+        if configured.is_dir():
+            return configured
+        if sys.platform == "win32":
+            try:
+                import winreg
+
+                with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\EqualizerAPO") as key:
+                    value, _ = winreg.QueryValueEx(key, "ConfigPath")
+                detected = Path(value)
+                if detected.is_dir():
+                    self.settings["apo_config_dir"] = str(detected)
+                    return detected
+            except (OSError, ImportError):
+                pass
+        return configured
 
     def _load_settings(self) -> Dict:
         if self.settings_path.exists():
@@ -70,7 +90,7 @@ class APOManager:
         (self.presets_dir / preset_name).write_text(content, encoding="utf-8")
 
     def check_environment(self) -> Dict[str, bool]:
-        apo_dir = Path(self.settings["apo_config_dir"])
+        apo_dir = self._effective_apo_config_dir()
         return {
             "apo_installed": apo_dir.exists(),
             "apo_config_writable": self._is_dir_writable(apo_dir),
@@ -93,7 +113,7 @@ class APOManager:
 
     def ensure_main_config_hook(self) -> Tuple[bool, str]:
         """确保 Equalizer APO 的主 config.txt 包含对本工具路由文件的 Include 引用。"""
-        apo_dir = Path(self.settings["apo_config_dir"])
+        apo_dir = self._effective_apo_config_dir()
         main_cfg = apo_dir / "config.txt"
         if not apo_dir.exists():
             return False, f"未找到 Equalizer APO 配置目录：{apo_dir}"
@@ -162,7 +182,7 @@ class APOManager:
         if not ok:
             return False, msg
 
-        apo_dir = Path(self.settings["apo_config_dir"])
+        apo_dir = self._effective_apo_config_dir()
         hook_file = apo_dir / HOOK_FILENAME
         content = self.render_active_config()
 
