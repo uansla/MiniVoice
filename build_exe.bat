@@ -17,6 +17,7 @@ echo 正在复制配置和说明...
 if exist dist\MiniVoice\config rmdir /s /q dist\MiniVoice\config
 xcopy config dist\MiniVoice\config /E /I /Y >nul
 xcopy scripts dist\MiniVoice\scripts /E /I /Y >nul
+xcopy vst_plugins dist\MiniVoice\vst_plugins /E /I /Y >nul
 copy README.md dist\MiniVoice\README.md >nul
 if errorlevel 1 goto :failed
 
