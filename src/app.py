@@ -297,7 +297,9 @@ class MiniVoiceApp(tk.Tk):
             return
         messagebox.showinfo(
             "安装音频引擎",
-            "将以管理员权限启动安装脚本。安装 Equalizer APO 后，请在设备选择器中勾选正在使用的麦克风，并按安装程序提示重启电脑。安装需要联网。",
+            "将以管理员权限启动安装脚本。完整测试包内含 Equalizer APO 安装程序；脚本还会询问是否安装可选的 SteelSeries GG/Sonar。\n\n"
+            "要安装 Sonar，请在脚本窗口输入 y 并回车。Sonar 通过 winget 下载，需要网络；如果电脑没有 winget，请从官方页面单独下载安装：https://steelseries.com/gg\n\n"
+            "安装 Equalizer APO 后，在设备选择器中勾选要处理的麦克风，并按安装程序提示重启电脑。",
         )
         args = f'-NoProfile -ExecutionPolicy Bypass -File "{script}"'
         result = ctypes.windll.shell32.ShellExecuteW(None, "runas", "powershell.exe", args, str(script.parent), 1)
@@ -326,7 +328,21 @@ class MiniVoiceApp(tk.Tk):
             except OSError as exc:
                 messagebox.showerror("无法启动程序", f"启动 {name} 失败：\n{exc}")
         else:
-            messagebox.showinfo("未找到程序", f"未在默认路径找到 {name}：\n{exe_path}\n\n请先运行 scripts/install_tools.ps1 安装。")
+            if name == "SteelSeries GG":
+                messagebox.showinfo(
+                    "未找到 SteelSeries GG",
+                    f"未在默认路径找到 SteelSeries GG：\n{exe_path}\n\n"
+                    "如需 Sonar AI 降噪，请点击主界面的“安装/修复音频引擎”，在管理员脚本窗口输入 y 并回车安装。"
+                    "这一步需要网络和 winget。没有 winget 时，请从 SteelSeries 官方页面下载安装：\n"
+                    "https://steelseries.com/gg\n\n"
+                    "Sonar 是可选降噪功能；不安装也可以使用 Equalizer APO 变声。",
+                )
+            else:
+                messagebox.showinfo(
+                    "未找到程序",
+                    f"未在默认路径找到 {name}：\n{exe_path}\n\n"
+                    "请点击主界面的“安装/修复音频引擎”安装 Equalizer APO，然后重新检测环境。",
+                )
 
     def _open_sonar(self):
         self._launch_exe(self.manager.settings["sonar_exe"], "SteelSeries GG")
