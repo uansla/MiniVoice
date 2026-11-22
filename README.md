@@ -49,8 +49,9 @@ GitHub 构建会附带 Equalizer APO 安装程序，但**当前没有随包分�
 ## 快速部署步骤（约 5 分钟）
 
 ### 第 1 步：一键安装基础软件
-1. 点击界面里的 **“安装/修复音频引擎”**，或右键 `scripts/install_tools.ps1` 以管理员身份运行。完整测试包可离线启动随包提供的 Equalizer APO 安装程序；Sonar 可选安装。
-2. 在 Equalizer APO 安装器/Device Selector 中选择实际麦克风设备，完成后按提示重启 Windows。仅以管理员身份运行 MiniVoice 不会替代这一步，也不会自动创建 Equalizer APO 配置目录。
+1. 点击界面里的 **“安装/修复音频引擎”**，在管理员确认框中选择“是”。不要在资源管理器里寻找 `.ps1` 的“安装”菜单；它是 PowerShell 脚本，由应用按钮启动。完整测试包内含 Equalizer APO 安装程序。
+2. 脚本询问是否安装 SteelSeries GG/Sonar 时，输入 `y` 并回车。Sonar 是可选降噪组件，脚本通过 `winget` 下载，需要联网；若电脑没有 winget，请从 [SteelSeries 官网](https://steelseries.com/gg)单独下载安装。也可以输入 `n` 跳过，之后仍可使用 Equalizer APO 变声。
+3. 在 Equalizer APO 安装器/Device Selector 中选择实际麦克风设备，完成后按提示重启 Windows。仅以管理员身份运行 MiniVoice 不会替代这一步，也不会自动创建 Equalizer APO 配置目录。
 
 ### 第 2 步（可选）：配置 AI 降噪
 1. 打开 **SteelSeries GG**，进入左侧 **Sonar** 模块（完全免费，无需赛睿硬件）。
