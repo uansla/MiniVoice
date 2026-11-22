@@ -44,7 +44,24 @@ class MiniVoiceApp(tk.Tk):
 
         self._setup_styles()
         self._build_ui()
+        self._select_bundled_vst_if_available()
         self._refresh_status()
+
+    def _bundled_vst_plugins(self):
+        """Return VST DLLs shipped beside the portable app (or in the source tree)."""
+        plugin_dir = self.project_root / "vst_plugins"
+        if not plugin_dir.is_dir():
+            return []
+        return sorted(plugin_dir.glob("*.dll"), key=lambda path: path.name.lower())
+
+    def _select_bundled_vst_if_available(self):
+        """Preselect a bundled plugin when settings do not point to a valid DLL."""
+        configured = self.vst_var.get().strip()
+        if configured and Path(configured).is_file():
+            return
+        candidates = self._bundled_vst_plugins()
+        if candidates:
+            self.vst_var.set(str(candidates[0].resolve()))
 
     def _setup_styles(self):
         style = ttk.Style(self)
@@ -192,6 +209,14 @@ class MiniVoiceApp(tk.Tk):
 
     def _browse_vst(self):
         initial_dir = str(self.project_root / "vst_plugins")
+        candidates = self._bundled_vst_plugins()
+        if not candidates:
+            messagebox.showinfo(
+                "插件目录为空",
+                "当前安装包没有附带 VST2 变声插件。请将已获授权的 64 位 VST2 DLL 放入：\n"
+                f"{initial_dir}\n\n"
+                "Equalizer APO 64 位不能加载 32 位插件；VST3 也不能作为此处的 DLL 使用。",
+            )
         path = filedialog.askopenfilename(
             title="选择变声 VST2 插件 (.dll)",
             initialdir=initial_dir,
@@ -277,7 +302,25 @@ class MiniVoiceApp(tk.Tk):
 
     def _launch_exe(self, exe_path: str, name: str):
         if os.path.exists(exe_path):
-            subprocess.Popen([exe_path])
+            # Equalizer APO's Editor ships its own Qt runtime. Inherited Qt or
+            # Python paths can make it load an incompatible platform plugin.
+            child_env = os.environ.copy()
+            for variable in (
+                "QT_PLUGIN_PATH",
+                "QT_QPA_PLATFORM_PLUGIN_PATH",
+                "QT_QPA_FONTDIR",
+                "PYTHONHOME",
+                "PYTHONPATH",
+            ):
+                child_env.pop(variable, None)
+            try:
+                subprocess.Popen(
+                    [exe_path],
+                    cwd=str(Path(exe_path).resolve().parent),
+                    env=child_env,
+                )
+            except OSError as exc:
+                messagebox.showerror("无法启动程序", f"启动 {name} 失败：\n{exc}")
         else:
             messagebox.showinfo("未找到程序", f"未在默认路径找到 {name}：\n{exe_path}\n\n请先运行 scripts/install_tools.ps1 安装。")
 
