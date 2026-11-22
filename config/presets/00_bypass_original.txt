@@ -1,0 +1,3 @@
+# 原声直通预设
+# 仅保留 SteelSeries Sonar 的 AI 降噪，不加载变声与 EQ 修饰
+Preamp: 0 dB

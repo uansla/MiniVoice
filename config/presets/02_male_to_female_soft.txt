@@ -1,0 +1,10 @@
+# 男变女（柔和/自然）基础信号链
+# 说明：高通滤波 + 变声 VST + 柔化齿音的 EQ 修饰
+# 首次使用请在 Equalizer APO Editor 中微调 VST 的 Pitch/Formant 参数并保存 ChunkData
+
+Filter: ON HP Fc 90 Hz
+VSTPlugin: Library "{{VST_PATH}}"
+Filter: ON PK Fc 220 Hz Gain -2.0 dB Q 1.2
+Filter: ON PK Fc 2800 Hz Gain 1.5 dB Q 1.0
+Filter: ON PK Fc 7500 Hz Gain -1.5 dB Q 2.0
+Preamp: 0 dB

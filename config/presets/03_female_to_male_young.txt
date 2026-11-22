@@ -1,0 +1,8 @@
+# 女变男（青年男声）基础信号链
+# 说明：高通滤波 + 变声 VST + 适度增强 150Hz-250Hz 胸腔厚度
+
+Filter: ON HP Fc 75 Hz
+VSTPlugin: Library "{{VST_PATH}}"
+Filter: ON PK Fc 180 Hz Gain 2.5 dB Q 1.2
+Filter: ON PK Fc 4500 Hz Gain -1.5 dB Q 1.4
+Preamp: 0 dB

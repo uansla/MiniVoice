@@ -1,0 +1,9 @@
+# 女变男（低沉稳重）基础信号链
+# 说明：高通滤波 + 变声 VST + 增强低频厚度并压低高频尖锐感
+
+Filter: ON HP Fc 65 Hz
+VSTPlugin: Library "{{VST_PATH}}"
+Filter: ON PK Fc 140 Hz Gain 3.5 dB Q 1.0
+Filter: ON PK Fc 300 Hz Gain 1.5 dB Q 1.2
+Filter: ON PK Fc 5000 Hz Gain -2.5 dB Q 1.2
+Preamp: 0 dB

@@ -1,0 +1,12 @@
+请将你下载的变声 VST2 插件（.dll 文件）放到这个文件夹中。
+
+【重要兼容性说明：关于 RoVee 与 64 位 Equalizer APO】
+1. 64 位 Windows 系统安装的 Equalizer APO 为 64 位版本，原生仅支持加载 64 位 VST2 插件（.dll）。
+2. g200kg 发布的原版 RoVee 1.21 为 32 位 VST2 插件：
+   - 如果一定要用原版 RoVee.dll，需要用 jBridge 等 32->64 桥接工具生成 64 位桥接 DLL 后放入此处。
+   - 更推荐直接下载原生 64 位的免费音高/共振峰变声 VST2 插件（开箱即用、零崩溃）：
+     * GVST GForm (64-bit VST2, 免费轻量，专门调节音高与共振峰): https://www.gvst.co.uk/gform.htm
+     * Auburn Sounds Graillon Free (64-bit VST2, 免费，音质自然): https://www.auburnsounds.com/products/Graillon.html
+     * MeldaProduction MAutoPitch (64-bit VST2, 免费，带 Formant Shift)
+
+放入 DLL 后，在极简变声 (MiniVoice) 界面点击“选择 DLL...”，程序会自动检测该 DLL 是 32 位还是 64 位并给出提示。

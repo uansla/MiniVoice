@@ -1,0 +1,10 @@
+{
+  "apo_config_dir": "C:\\Program Files\\EqualizerAPO\\config",
+  "apo_editor_exe": "C:\\Program Files\\EqualizerAPO\\Editor.exe",
+  "apo_device_selector_exe": "C:\\Program Files\\EqualizerAPO\\DeviceSelector.exe",
+  "sonar_exe": "C:\\Program Files\\SteelSeries\\GG\\SteelSeriesGG.exe",
+  "target_device": "SteelSeries Sonar - Microphone",
+  "vst_dll_path": "",
+  "active_preset": "00_bypass_original.txt",
+  "enabled": false
+}
