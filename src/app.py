@@ -6,6 +6,7 @@ app.py
 
 import os
 import subprocess
+import sys
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
@@ -26,7 +27,13 @@ PRESET_LABELS = {
 class MiniVoiceApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.project_root = Path(__file__).resolve().parent.parent
+        # In a PyInstaller build __file__ points inside the bundle. Keep mutable
+        # settings and presets beside the executable so users can update them.
+        self.project_root = (
+            Path(sys.executable).resolve().parent
+            if getattr(sys, "frozen", False)
+            else Path(__file__).resolve().parent.parent
+        )
         self.manager = APOManager(self.project_root)
 
         self.title("极简变声 (MiniVoice) · Sonar AI降噪 + Equalizer APO")
