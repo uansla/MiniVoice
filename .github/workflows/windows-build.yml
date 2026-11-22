@@ -31,6 +31,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Copy-Item config dist/MiniVoice/config -Recurse -Force
           Copy-Item scripts dist/MiniVoice/scripts -Recurse -Force
+          Copy-Item vst_plugins dist/MiniVoice/vst_plugins -Recurse -Force
           Copy-Item README.md dist/MiniVoice/README.md -Force
           Compress-Archive -Path dist/MiniVoice/* -DestinationPath dist/MiniVoice-windows-x64.zip -Force
 
