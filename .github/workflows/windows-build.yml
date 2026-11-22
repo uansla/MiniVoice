@@ -24,6 +24,16 @@ jobs:
       - name: Install packager
         run: python -m pip install --upgrade pyinstaller
 
+      - name: Download Equalizer APO offline installer and matching source
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dependencies | Out-Null
+          $base = 'https://sourceforge.net/projects/equalizerapo/files/1.4.2'
+          Invoke-WebRequest "$base/EqualizerAPO-x64-1.4.2.exe/download" -OutFile dependencies/EqualizerAPO-x64-1.4.2.exe
+          Invoke-WebRequest "$base/EqualizerAPO-src-1.4.2.zip/download" -OutFile dependencies/EqualizerAPO-src-1.4.2.zip
+          $sourceHash = (Get-FileHash dependencies/EqualizerAPO-src-1.4.2.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($sourceHash -ne 'bacd5c78be71f3aaab010684ab39f0e5c1bbb45fcd75cbb92c103a145a731dc4') { throw "Equalizer APO source hash mismatch: $sourceHash" }
+
       - name: Build portable app folder
         shell: pwsh
         run: |
@@ -32,6 +42,7 @@ jobs:
           Copy-Item config dist/MiniVoice/config -Recurse -Force
           Copy-Item scripts dist/MiniVoice/scripts -Recurse -Force
           Copy-Item vst_plugins dist/MiniVoice/vst_plugins -Recurse -Force
+          Copy-Item dependencies dist/MiniVoice/dependencies -Recurse -Force
           Copy-Item README.md dist/MiniVoice/README.md -Force
           Compress-Archive -Path dist/MiniVoice/* -DestinationPath dist/MiniVoice-windows-x64.zip -Force
 
