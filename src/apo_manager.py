@@ -15,6 +15,16 @@ from typing import Dict, List, Tuple
 
 HOOK_FILENAME = "minivoice.txt"
 HOOK_MARKER = "# [MiniVoice-AutoManaged]"
+DEFAULT_SETTINGS = {
+    "apo_config_dir": r"C:\Program Files\EqualizerAPO\config",
+    "apo_editor_exe": r"C:\Program Files\EqualizerAPO\Editor.exe",
+    "apo_device_selector_exe": r"C:\Program Files\EqualizerAPO\DeviceSelector.exe",
+    "sonar_exe": r"C:\Program Files\SteelSeries\GG\SteelSeriesGG.exe",
+    "target_device": "SteelSeries Sonar - Microphone",
+    "vst_dll_path": "",
+    "active_preset": "00_bypass_original.txt",
+    "enabled": False,
+}
 
 
 class APOManager:
@@ -27,17 +37,13 @@ class APOManager:
 
     def _load_settings(self) -> Dict:
         if self.settings_path.exists():
-            return json.loads(self.settings_path.read_text(encoding="utf-8"))
-        return {
-            "apo_config_dir": r"C:\Program Files\EqualizerAPO\config",
-            "apo_editor_exe": r"C:\Program Files\EqualizerAPO\Editor.exe",
-            "apo_device_selector_exe": r"C:\Program Files\EqualizerAPO\DeviceSelector.exe",
-            "sonar_exe": r"C:\Program Files\SteelSeries\GG\SteelSeriesGG.exe",
-            "target_device": "SteelSeries Sonar - Microphone",
-            "vst_dll_path": "",
-            "active_preset": "00_bypass_original.txt",
-            "enabled": False,
-        }
+            try:
+                loaded = json.loads(self.settings_path.read_text(encoding="utf-8"))
+                if isinstance(loaded, dict):
+                    return {**DEFAULT_SETTINGS, **loaded}
+            except (OSError, json.JSONDecodeError):
+                pass
+        return DEFAULT_SETTINGS.copy()
 
     def save_settings(self) -> None:
         self.config_dir.mkdir(parents=True, exist_ok=True)
@@ -52,6 +58,8 @@ class APOManager:
         return sorted(p.name for p in self.presets_dir.glob("*.txt"))
 
     def read_preset(self, preset_name: str) -> str:
+        if Path(preset_name).name != preset_name:
+            return ""
         path = self.presets_dir / preset_name
         if not path.exists():
             return ""
